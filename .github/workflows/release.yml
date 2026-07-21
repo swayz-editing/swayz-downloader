@@ -1,0 +1,92 @@
+name: Build & Release (Windows + macOS)
+
+# Se déclenche quand tu pousses un tag de version (ex. v1.0.0),
+# ou manuellement depuis l'onglet Actions.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------- Windows
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pywebview pythonnet pyinstaller
+
+      - name: Fetch engine binaries (yt-dlp + ffmpeg)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force bundle_bin | Out-Null
+          Invoke-WebRequest "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe" -OutFile bundle_bin/yt-dlp.exe
+          Invoke-WebRequest "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip" -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath ffmpeg_x
+          Copy-Item (Get-ChildItem ffmpeg_x -Recurse -Filter ffmpeg.exe)[0].FullName bundle_bin/ffmpeg.exe
+
+      - name: Build .exe
+        shell: pwsh
+        run: |
+          $env:ONEFILE = "1"
+          pyinstaller --noconfirm build.spec
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "dist/SWAYZ Downloader.exe"
+
+  # ------------------------------------------------------------------ macOS
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install pywebview pyobjc-core pyobjc-framework-Cocoa pyobjc-framework-WebKit pyinstaller
+
+      - name: Fetch engine binaries (yt-dlp + ffmpeg)
+        run: |
+          mkdir -p bundle_bin
+          curl -L "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos" -o bundle_bin/yt-dlp
+          chmod +x bundle_bin/yt-dlp
+          curl -L "https://evermeet.cx/ffmpeg/getrelease/ffmpeg/zip" -o ffmpeg.zip
+          unzip -o ffmpeg.zip -d ffmpeg_x
+          cp ffmpeg_x/ffmpeg bundle_bin/ffmpeg
+          chmod +x bundle_bin/ffmpeg
+
+      - name: Make .icns icon (from icon.png if present)
+        run: |
+          if [ -f icon.png ]; then
+            mkdir -p icon.iconset
+            for s in 16 32 128 256 512; do
+              sips -z $s $s icon.png --out icon.iconset/icon_${s}x${s}.png >/dev/null
+              d=$((s*2)); sips -z $d $d icon.png --out icon.iconset/icon_${s}x${s}@2x.png >/dev/null
+            done
+            iconutil -c icns icon.iconset -o icon.icns || true
+          fi
+
+      - name: Build .app
+        run: pyinstaller --noconfirm build.spec
+
+      - name: Zip the .app
+        run: |
+          cd dist
+          zip -r -y "SWAYZ-Downloader-macOS.zip" "SWAYZ Downloader.app"
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "dist/SWAYZ-Downloader-macOS.zip"

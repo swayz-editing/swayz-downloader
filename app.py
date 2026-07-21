@@ -18,16 +18,33 @@ import webview
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 FROZEN = getattr(sys, "frozen", False)
 
+IS_WIN = os.name == "nt"
+IS_MAC = sys.platform == "darwin"
+EXE = ".exe" if IS_WIN else ""
+# Pas de fenêtre console au lancement des sous-process (Windows uniquement)
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if IS_WIN else 0
+
+APP_VERSION = "1.0.0"
+# Dépôt GitHub (à renseigner après création) pour la mise à jour de l'app.
+# Format : "utilisateur/depot" — ex. "swayzediting/swayz-downloader".
+APP_REPO = ""
+
 
 def resource_path(name):
-    """Chemin d'une ressource embarquée (fonctionne en .py comme en .exe)."""
+    """Chemin d'une ressource embarquée (fonctionne en .py comme en .exe/.app)."""
     base = getattr(sys, "_MEIPASS", APP_DIR)
     return os.path.join(base, name)
 
 
 def data_dir():
-    """Dossier durable pour la config (survit au .exe onefile)."""
-    d = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), "SWAYZ")
+    """Dossier durable pour la config, multiplateforme."""
+    if IS_WIN:
+        base = os.environ.get("APPDATA") or os.path.expanduser("~")
+    elif IS_MAC:
+        base = os.path.expanduser("~/Library/Application Support")
+    else:
+        base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    d = os.path.join(base, "SWAYZ")
     try:
         os.makedirs(d, exist_ok=True)
     except Exception:
@@ -39,16 +56,14 @@ CONFIG_PATH = os.path.join(data_dir(), "config.json")
 INDEX = resource_path("index.html")
 ICON = resource_path("icon.ico")
 
-APP_VERSION = "1.0.0"
-
-# Binaires : embarqués dans le .exe, sinon depuis le PATH
-YTDLP = resource_path("yt-dlp.exe") if FROZEN else "yt-dlp"
+# Binaires : embarqués dans le paquet, sinon depuis le PATH
+YTDLP = resource_path("yt-dlp" + EXE) if FROZEN else "yt-dlp"
 FFMPEG_DIR = getattr(sys, "_MEIPASS", None) if FROZEN else None
-FFMPEG = os.path.join(FFMPEG_DIR, "ffmpeg.exe") if FFMPEG_DIR else "ffmpeg"
+FFMPEG = os.path.join(FFMPEG_DIR, "ffmpeg" + EXE) if FFMPEG_DIR else "ffmpeg"
 
-# yt-dlp mis à jour (téléchargé dans APPDATA) — a priorité sur celui embarqué,
-# ce qui permet de mettre à jour le moteur sans reconstruire l'exe.
-UPDATED_YTDLP = os.path.join(data_dir(), "yt-dlp.exe")
+# yt-dlp mis à jour (téléchargé dans le dossier données) — prioritaire sur celui
+# embarqué, ce qui permet de mettre à jour le moteur sans reconstruire l'app.
+UPDATED_YTDLP = os.path.join(data_dir(), "yt-dlp" + EXE)
 
 
 def ytdlp_path():
@@ -62,6 +77,8 @@ def ytdlp_path():
 
 def set_app_id():
     """Identité Windows distincte (barre des tâches) pour SWΛYZ."""
+    if not IS_WIN:
+        return
     try:
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("SWAYZ.Downloader")
     except Exception:
@@ -70,7 +87,7 @@ def set_app_id():
 
 def set_window_icon():
     """Applique icon.ico à la fenêtre + barre des tâches (via l'API Win32)."""
-    if not os.path.exists(ICON):
+    if not IS_WIN or not os.path.exists(ICON):
         return
     try:
         hwnd = ctypes.windll.user32.FindWindowW(None, "SWΛYZ")
@@ -127,7 +144,7 @@ class Api:
 
     def _ytdlp_version(self):
         try:
-            flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            flags = NO_WINDOW
             out = subprocess.run(
                 [ytdlp_path(), "--version"], capture_output=True, text=True,
                 creationflags=flags, timeout=15,
@@ -153,6 +170,33 @@ class Api:
         return {"ok": True, "current": cur, "latest": latest,
                 "needs": bool(latest) and latest != cur}
 
+    def check_app_update(self):
+        """Vérifie une nouvelle version de l'APP via les Releases GitHub."""
+        if not APP_REPO:
+            return {"ok": False, "code": "no_repo"}
+        import urllib.request
+        try:
+            req = urllib.request.Request(
+                "https://api.github.com/repos/%s/releases/latest" % APP_REPO,
+                headers={"User-Agent": "SWAYZ-Downloader"},
+            )
+            with urllib.request.urlopen(req, timeout=15) as r:
+                data = json.load(r)
+            tag = (data.get("tag_name") or "").lstrip("vV").strip()
+            page = data.get("html_url") or ("https://github.com/%s/releases/latest" % APP_REPO)
+        except Exception:
+            return {"ok": False, "code": "offline"}
+        return {"ok": True, "current": APP_VERSION, "latest": tag,
+                "needs": bool(tag) and tag != APP_VERSION, "url": page}
+
+    def open_url(self, url):
+        import webbrowser
+        try:
+            webbrowser.open(url)
+        except Exception:
+            pass
+        return {"ok": True}
+
     def update_ytdlp(self):
         if self._updating:
             return {"ok": False, "error": "Mise à jour déjà en cours."}
@@ -162,7 +206,13 @@ class Api:
 
     def _do_update_ytdlp(self):
         import urllib.request
-        url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+        if IS_WIN:
+            asset = "yt-dlp.exe"
+        elif IS_MAC:
+            asset = "yt-dlp_macos"
+        else:
+            asset = "yt-dlp_linux"
+        url = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/" + asset
         tmp = UPDATED_YTDLP + ".part"
         try:
             self._js("onUpdateProgress", 0, "updating")
@@ -180,6 +230,11 @@ class Api:
                         if total:
                             self._js("onUpdateProgress", done / total * 100, "updating")
             os.replace(tmp, UPDATED_YTDLP)
+            if not IS_WIN:
+                try:
+                    os.chmod(UPDATED_YTDLP, 0o755)
+                except Exception:
+                    pass
             self._js("onUpdateDone", True, self._ytdlp_version())
         except Exception as e:
             try:
@@ -231,7 +286,12 @@ class Api:
         target = self._last_dir or self._cfg.get("dest", default_folder())
         if target and os.path.isdir(target):
             try:
-                os.startfile(target)
+                if IS_WIN:
+                    os.startfile(target)  # noqa: A003 (Windows only)
+                elif IS_MAC:
+                    subprocess.Popen(["open", target])
+                else:
+                    subprocess.Popen(["xdg-open", target])
             except Exception:
                 pass
 
@@ -243,7 +303,7 @@ class Api:
         try:
             cmd = [ytdlp_path(), "--dump-single-json", "--no-playlist",
                    "--no-warnings", "--no-update", url]
-            flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            flags = NO_WINDOW
             out = subprocess.run(
                 cmd, capture_output=True, text=True, encoding="utf-8",
                 errors="replace", creationflags=flags, timeout=45,
@@ -340,7 +400,7 @@ class Api:
         final_path = None
         try:
             cmd = self._build_cmd(url, dest, mode, quality, audio_fmt)
-            flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            flags = NO_WINDOW
             proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                 text=True, encoding="utf-8", errors="replace", creationflags=flags,
@@ -398,7 +458,7 @@ class Api:
     def _probe(self, path):
         """Renvoie (codec_video, duree_sec) via ffmpeg -i."""
         try:
-            flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+            flags = NO_WINDOW
             out = subprocess.run([FFMPEG, "-i", path], capture_output=True,
                                  text=True, errors="replace", creationflags=flags).stderr
         except Exception:
@@ -428,7 +488,7 @@ class Api:
             "-movflags", "+faststart",
             "-progress", "pipe:1", "-nostats", tmp,
         ]
-        flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+        flags = NO_WINDOW
         try:
             proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,

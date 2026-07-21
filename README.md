@@ -32,13 +32,20 @@ Works with **YouTube, TikTok, Instagram, Vimeo, Twitter/X, Facebook** and hundre
 
 ---
 
-## ⬇️ Download &amp; install (Windows)
+## ⬇️ Download &amp; install
 
-1. Go to the **[Releases](../../releases)** page and download **`SWAYZ Downloader.exe`**.
-2. Double-click it. Nothing to install — everything is included.
-3. On the first launch, Windows SmartScreen may warn you (it does that for any app that isn't code-signed). Click **“More info” → “Run anyway.”**
+Grab the latest build from the **[Releases](../../releases)** page — nothing to install, everything is bundled inside.
 
-> Requires Windows 10 or 11. The file is ~100&nbsp;MB because the download engine and the video toolkit are bundled inside — your friends need **zero** setup.
+### 🪟 Windows 10 / 11
+1. Download **`SWAYZ Downloader.exe`** and double-click it.
+2. On the first launch, Windows SmartScreen may warn you (it does that for any app that isn't code-signed). Click **“More info” → “Run anyway.”**
+
+### 🍎 macOS
+1. Download **`SWAYZ-Downloader-macOS.zip`**, unzip it, and move **SWAYZ Downloader.app** to Applications.
+2. The app isn't signed with a paid Apple certificate, so the first time: **right-click the app → Open → Open**. You only do this once.
+
+> Your friends need **zero** setup — the download engine and video toolkit are inside the app.
+> Both builds are produced automatically by GitHub Actions (see [`.github/workflows/release.yml`](.github/workflows/release.yml)) — no Mac required to ship the Mac version.
 
 ---
 
@@ -56,7 +63,9 @@ The output is always a clean **MP4 (H.264)** file that opens anywhere and import
 
 ## 🔄 Keeping it up to date
 
-Video sites change often. If a link ever stops working, click **“⟳ Check for updates”** at the bottom of the app — it fetches the latest engine from GitHub and fixes itself. No re-install needed.
+Click **“⟳ Check for updates”** at the bottom of the app. It does two things:
+- **Engine update** — video sites change often; if a link ever stops working, this fetches the latest download engine from GitHub and fixes itself, no re-install needed.
+- **App update** — when a new version of SWΛYZ Downloader ships (new features), it points you straight to the download. *(Enabled once the project's GitHub repo is set in `APP_REPO` inside `app.py`.)*
 
 ---
 

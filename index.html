@@ -233,8 +233,12 @@
     zh:{link_label:"视频链接",format:"格式",quality:"画质",audio_format:"音频格式",dest:"保存文件夹",hint_h264:"✓ MP4 H.264 文件 — 到处都能打开，无导入错误",paste:"粘贴",choose:"选择",download:"⬇  下载",open_folder:"📂  打开文件夹",check_updates:"⟳ 检查更新",fmt_video:"🎬 视频 + 声音",fmt_audio:"🎵 音频",best:"最佳",mp3_note:"压缩",wav_note:"无损",analyzing:"正在分析链接…",drop:"将链接拖到这里",min_t:"最小化",close_t:"关闭",st_start:"开始…",downloading:"下载中…",merging:"合并中…",extracting:"提取音频…",reencoding:"重新编码 (H.264)…",done:"完成 ✔",no_link:"请先粘贴链接。",bad_folder:"请选择文件夹。",busy:"已有下载在进行中。",fail:"失败。请检查链接。",no_ytdlp:"未找到 yt-dlp。",error:"发生错误。",upd_checking:"检查中…",upd_uptodate:"已是最新 ✓",upd_new:"新版本",upd_installing:"安装中…",updating:"下载中…",upd_done:"引擎已更新 ✓",upd_fail:"失败：",offline:"无法连接 GitHub。"},
     hi:{link_label:"वीडियो लिंक",format:"फ़ॉर्मैट",quality:"क्वालिटी",audio_format:"ऑडियो फ़ॉर्मैट",dest:"गंतव्य फ़ोल्डर",hint_h264:"✓ MP4 H.264 फ़ाइल — हर जगह खुलती है, कोई इम्पोर्ट त्रुटि नहीं",paste:"पेस्ट करें",choose:"चुनें",download:"⬇  डाउनलोड",open_folder:"📂  फ़ोल्डर खोलें",check_updates:"⟳ अपडेट जाँचें",fmt_video:"🎬 वीडियो + ध्वनि",fmt_audio:"🎵 ऑडियो",best:"सर्वोत्तम",mp3_note:"संपीड़ित",wav_note:"असंपीड़ित",analyzing:"लिंक विश्लेषण हो रहा है…",drop:"अपना लिंक यहाँ छोड़ें",min_t:"छोटा करें",close_t:"बंद करें",st_start:"शुरू हो रहा है…",downloading:"डाउनलोड हो रहा है…",merging:"मर्ज हो रहा है…",extracting:"ऑडियो निकाला जा रहा है…",reencoding:"रीएन्कोडिंग (H.264)…",done:"पूर्ण ✔",no_link:"पहले एक लिंक पेस्ट करें।",bad_folder:"एक फ़ोल्डर चुनें।",busy:"एक डाउनलोड पहले से चल रहा है।",fail:"विफल। लिंक जाँचें।",no_ytdlp:"yt-dlp नहीं मिला।",error:"एक त्रुटि हुई।",upd_checking:"जाँच हो रही है…",upd_uptodate:"अद्यतित ✓",upd_new:"नया संस्करण",upd_installing:"इंस्टॉल हो रहा है…",updating:"डाउनलोड हो रहा है…",upd_done:"इंजन अपडेट हुआ ✓",upd_fail:"विफल:",offline:"GitHub से कनेक्शन नहीं।"}
   };
+  const APPT = {
+    upd_app_new:{en:"New app version",fr:"Nouvelle version de l'app",es:"Nueva versión de la app",pt:"Nova versão do app",it:"Nuova versione dell'app",de:"Neue App-Version",ar:"إصدار جديد من التطبيق",tr:"Yeni uygulama sürümü",ru:"Новая версия приложения",id:"Versi aplikasi baru",zh:"新版本应用",hi:"नया ऐप संस्करण"},
+    upd_app_get:{en:"Download",fr:"Télécharger",es:"Descargar",pt:"Baixar",it:"Scarica",de:"Herunterladen",ar:"تنزيل",tr:"İndir",ru:"Скачать",id:"Unduh",zh:"下载",hi:"डाउनलोड"}
+  };
   let lang = 'en';
-  function t(k){ return (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k; }
+  function t(k){ return (I18N[lang] && I18N[lang][k]) || (APPT[k] && (APPT[k][lang]||APPT[k].en)) || I18N.en[k] || k; }
   function applyLang(code){
     lang = I18N[code] ? code : 'en';
     document.documentElement.lang = lang;
@@ -296,6 +300,20 @@
   async function checkUpdate(){
     const btn = document.getElementById('updbtn'), msg = document.getElementById('updmsg');
     btn.disabled = true; msg.className = 'updmsg'; msg.textContent = t('upd_checking');
+    // 1) Nouvelle version de l'APP elle-même ?
+    try{
+      const a = await pywebview.api.check_app_update();
+      if(a && a.ok && a.needs){
+        msg.className = 'updmsg ok'; msg.textContent = '';
+        msg.appendChild(document.createTextNode(`${t('upd_app_new')} ${a.latest} — `));
+        const link = document.createElement('a');
+        link.href = '#'; link.textContent = t('upd_app_get'); link.style.color = 'var(--accent)';
+        link.onclick = (e)=>{ e.preventDefault(); try{ pywebview.api.open_url(a.url); }catch(_){} };
+        msg.appendChild(link);
+        btn.disabled = false; return;
+      }
+    }catch(_){}
+    // 2) Sinon, mise à jour du moteur yt-dlp
     let r; try{ r = await pywebview.api.check_update(); }catch(_){ r = {ok:false}; }
     if(!r || !r.ok){ msg.textContent = t(r&&r.code ? r.code : 'offline'); msg.className='updmsg err'; btn.disabled=false; return; }
     if(!r.needs){ msg.textContent = `${t('upd_uptodate')}  (yt-dlp ${r.current})`; msg.className='updmsg ok'; btn.disabled=false; return; }
