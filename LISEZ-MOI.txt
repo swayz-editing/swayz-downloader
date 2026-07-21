@@ -1,0 +1,43 @@
+╔══════════════════════════════════════════════╗
+                 SWΛYZ  DOWNLOADER
+╚══════════════════════════════════════════════╝
+
+Télécharge des vidéos (YouTube, TikTok, Instagram, etc.)
+en haute qualité — vidéo + son, ou audio seul.
+
+
+▶ POUR L'UTILISER
+─────────────────
+1. Double-clique sur « SWAYZ Downloader.exe »
+   (au 1er lancement, Windows peut afficher un avertissement
+    "SmartScreen" : clique sur « Informations complémentaires »
+    puis « Exécuter quand même » — c'est normal pour un logiciel
+    non signé.)
+2. Colle le lien de la vidéo (bouton « Coller »).
+3. Choisis le format :
+      • Vidéo + Son (MP4)  ← par défaut
+      • Audio (MP3)
+      • Vidéo sans son
+4. Choisis le dossier de destination (« Choisir »).
+5. Clique « Télécharger ».
+6. « Ouvrir le dossier » pour retrouver / partager le fichier.
+
+
+▶ POUR TES AMIS
+───────────────
+Envoie-leur simplement le fichier « SWAYZ Downloader.exe ».
+Rien à installer : tout est inclus (yt-dlp + ffmpeg).
+Le fichier est trop lourd pour Discord (>25 Mo) :
+passe par Google Drive, WeTransfer ou une clé USB.
+
+Nécessite Windows 10 ou 11 (le moteur d'affichage WebView2,
+déjà présent sur ces versions).
+
+
+▶ SI UN LIEN RÉCENT NE MARCHE PLUS
+──────────────────────────────────
+Les plateformes changent souvent. Il suffira de me demander
+une mise à jour du moteur yt-dlp intégré.
+
+
+                        SWΛYZ

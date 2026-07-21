@@ -1,0 +1,25 @@
+# --- Binaires embarqués (à fournir localement pour builder, voir README) ---
+bundle_bin/
+
+# --- Sorties de build PyInstaller ---
+build/
+dist/
+*.manifest
+
+# --- Livrable / exécutables (distribués via GitHub Releases, pas dans le code) ---
+SWAYZ Downloader - A ENVOYER/
+*.exe
+
+# --- Config personnelle générée à l'exécution ---
+config.json
+
+# --- Python ---
+__pycache__/
+*.pyc
+
+# --- Éditeurs / OS ---
+.claude/
+.vscode/
+.idea/
+Thumbs.db
+Desktop.ini
