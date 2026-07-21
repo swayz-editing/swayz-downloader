@@ -21,6 +21,10 @@
   <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest/download/SWAYZ-Downloader-macOS.zip">
     <img alt="Download for macOS" src="https://img.shields.io/badge/⬇%20Download%20for%20macOS-.zip-2ea043?style=for-the-badge&logo=apple">
   </a>
+  &nbsp;
+  <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest/download/SWAYZ-Downloader-Linux">
+    <img alt="Download for Linux" src="https://img.shields.io/badge/⬇%20Download%20for%20Linux-binary-2ea043?style=for-the-badge&logo=linux">
+  </a>
 </p>
 
 <p align="center"><sub>One click, no setup. Or see all versions on the <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest">Releases</a> page.</sub></p>
@@ -56,6 +60,16 @@ Grab the latest build from the **[Releases](../../releases)** page — nothing t
 ### 🍎 macOS
 1. Download **`SWAYZ-Downloader-macOS.zip`**, unzip it, and move **SWAYZ Downloader.app** to Applications.
 2. The app isn't signed with a paid Apple certificate, so the first time: **right-click the app → Open → Open**. You only do this once.
+
+### 🐧 Linux
+1. Download **`SWAYZ-Downloader-Linux`**, then make it executable and run it:
+   ```bash
+   chmod +x SWAYZ-Downloader-Linux
+   ./SWAYZ-Downloader-Linux
+   ```
+2. It uses your system's WebKitGTK. If it doesn't start, install it once:
+   `sudo apt install gir1.2-webkit2-4.1` (Debian/Ubuntu) — or the equivalent for your distro.
+3. Prefer running from source? It's a one-liner — see [Build from source](#️-build-from-source) below.
 
 > Your friends need **zero** setup — the download engine and video toolkit are inside the app.
 > Both builds are produced automatically by GitHub Actions (see [`.github/workflows/release.yml`](.github/workflows/release.yml)) — no Mac required to ship the Mac version.

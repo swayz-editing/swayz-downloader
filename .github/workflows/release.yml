@@ -91,3 +91,43 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: "dist/SWAYZ-Downloader-macOS.zip"
+
+  # ------------------------------------------------------------------ Linux
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps (GTK + WebKit for pywebview)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-gi gir1.2-gtk-3.0 gir1.2-webkit2-4.1 \
+            libgirepository1.0-dev libcairo2-dev
+
+      - name: Install Python deps
+        run: pip install pywebview pygobject pyinstaller
+
+      - name: Fetch engine binaries (yt-dlp + ffmpeg)
+        run: |
+          mkdir -p bundle_bin
+          curl -L "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux" -o bundle_bin/yt-dlp
+          chmod +x bundle_bin/yt-dlp
+          curl -L "https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz" -o ffmpeg.tar.xz
+          tar xf ffmpeg.tar.xz
+          cp ffmpeg-*-amd64-static/ffmpeg bundle_bin/ffmpeg
+          chmod +x bundle_bin/ffmpeg
+
+      - name: Build
+        run: |
+          export ONEFILE=1
+          pyinstaller --noconfirm build.spec
+          cp "dist/SWAYZ Downloader" "SWAYZ-Downloader-Linux"
+
+      - name: Upload to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "SWAYZ-Downloader-Linux"
