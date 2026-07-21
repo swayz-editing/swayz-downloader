@@ -37,12 +37,13 @@ jobs:
         run: |
           $env:ONEFILE = "1"
           pyinstaller --noconfirm build.spec
+          Copy-Item "dist/SWAYZ Downloader.exe" "SWAYZ-Downloader-Windows.exe"
 
       - name: Upload to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: "dist/SWAYZ Downloader.exe"
+          files: "SWAYZ-Downloader-Windows.exe"
 
   # ------------------------------------------------------------------ macOS
   macos:

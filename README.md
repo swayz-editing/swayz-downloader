@@ -7,10 +7,23 @@
 
 <p align="center">
   <img alt="Windows" src="https://img.shields.io/badge/Windows-10%2F11-50C98A">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-supported-50C98A">
   <img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-50C98A">
   <img alt="Price" src="https://img.shields.io/badge/Price-Free-50C98A">
   <img alt="Open source" src="https://img.shields.io/badge/Open%20source-yes-50C98A">
 </p>
+
+<p align="center">
+  <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest/download/SWAYZ-Downloader-Windows.exe">
+    <img alt="Download for Windows" src="https://img.shields.io/badge/⬇%20Download%20for%20Windows-.exe-2ea043?style=for-the-badge&logo=windows">
+  </a>
+  &nbsp;
+  <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest/download/SWAYZ-Downloader-macOS.zip">
+    <img alt="Download for macOS" src="https://img.shields.io/badge/⬇%20Download%20for%20macOS-.zip-2ea043?style=for-the-badge&logo=apple">
+  </a>
+</p>
+
+<p align="center"><sub>One click, no setup. Or see all versions on the <a href="https://github.com/swayz-editing/swayz-downloader/releases/latest">Releases</a> page.</sub></p>
 
 ---
 
