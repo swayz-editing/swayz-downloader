@@ -39,6 +39,40 @@ jobs:
           pyinstaller --noconfirm build.spec
           Copy-Item "dist/SWAYZ Downloader.exe" "SWAYZ-Downloader-Windows.exe"
 
+      # Envoie l'exe non signé comme artefact (nécessaire pour SignPath)
+      - name: Upload unsigned artifact
+        id: unsigned
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-unsigned
+          path: "SWAYZ-Downloader-Windows.exe"
+
+      # Signature Authenticode via SignPath — GRATUIT pour l'open-source.
+      # Ne s'active QUE si tu as configuré la variable SIGNPATH_PROJECT_SLUG
+      # (sinon on publie l'exe non signé comme avant, rien ne casse).
+      - name: Sign with SignPath (free OSS)
+        id: sign
+        if: ${{ vars.SIGNPATH_PROJECT_SLUG != '' }}
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: signed
+
+      - name: Choose file to publish (signed if available)
+        shell: pwsh
+        run: |
+          if (Test-Path "signed/SWAYZ-Downloader-Windows.exe") {
+            Copy-Item "signed/SWAYZ-Downloader-Windows.exe" "SWAYZ-Downloader-Windows.exe" -Force
+            Write-Host "Using SIGNED build."
+          } else {
+            Write-Host "Using unsigned build (SignPath not configured yet)."
+          }
+
       - name: Upload to release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
