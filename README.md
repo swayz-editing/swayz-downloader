@@ -76,6 +76,23 @@ Grab the latest build from the **[Releases](../../releases)** page — nothing t
 
 ---
 
+## 🛡️ Is it safe? Why does Windows/macOS warn me?
+
+**Yes, it's safe — and here's why you can trust it:**
+
+- The **entire source code is public** in this repository. Anyone can read exactly what it does.
+- Every download is **built automatically by GitHub's own servers** (see the [Actions](../../actions) tab), straight from that public code — not hand-uploaded by anyone, so nothing hidden can be slipped in.
+- You can scan any file yourself on **[virustotal.com](https://www.virustotal.com)** before running it.
+
+**So why the warning?** Because the app isn't signed with a **paid code-signing certificate**. Windows (SmartScreen / Smart App Control) and macOS (Gatekeeper) show a scary message for *any* new app from an independent developer they don't recognize yet. It literally means *"we don't know this publisher"* — **not** *"this is a virus."* Every small free app hits this at first.
+
+**How to run it anyway:**
+- **Windows (SmartScreen):** click **“More info” → “Run anyway.”**
+- **Windows (Smart App Control):** it's stricter and may not offer that button. You can scan the file on VirusTotal to reassure yourself, then allow it — or your admin can allow it in Windows Security.
+- **macOS:** **right-click the app → Open → Open** (once).
+
+---
+
 ## 🕹️ How to use
 
 1. **Paste** a link (button, `Ctrl+V`, or drag it onto the window).
