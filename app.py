@@ -27,7 +27,7 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0) if IS_WIN else 0
 APP_VERSION = "1.0.0"
 # Dépôt GitHub (à renseigner après création) pour la mise à jour de l'app.
 # Format : "utilisateur/depot" — ex. "swayzediting/swayz-downloader".
-APP_REPO = ""
+APP_REPO = "swayz-editing/swayz-downloader"
 
 
 def resource_path(name):
